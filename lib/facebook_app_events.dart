@@ -17,6 +17,9 @@ class FacebookAppEvents {
   static const eventNameInitiateCheckout = 'fb_mobile_initiated_checkout';
   static const eventNameAddToCart = 'fb_mobile_add_to_cart';
   static const eventNameRated = 'fb_mobile_rate';
+  static const eventUnlockAchievement = 'fb_mobile_achievement_unlocked';
+  static const eventLevelAchieved = 'fb_mobile_level_achieved';
+  static const eventAddToWishlist = 'fb_mobile_add_to_wishlist';
 
   static const _paramNameValueToSum = "_valueToSum";
   static const paramNameRegistrationMethod = "fb_registration_method";
@@ -45,6 +48,16 @@ class FacebookAppEvents {
 
   /// Parameter key used to specify the currency
   /// Data should be a String
+  /// Parameter key used to specify the level of achievement.
+  /// This could be a string, level of the game
+  static const paramNameLevel = "fb_level";
+
+  /// Parameter key used to specify the level of achievement.
+  /// This could be a string, level of the game
+  static const paramNameDescription = "fb_description";
+
+  /// Parameter key used to specify the currency
+  /// This could be a string ISO 4217 code, e.g., "EUR", "USD", "JPY". , Price of item added
   static const paramNameCurrency = "fb_currency";
 
   /// Clears the current user data
@@ -287,15 +300,58 @@ class FacebookAppEvents {
     return _channel.invokeMethod<void>('setDataProcessingOptions', args);
   }
 
-  Future<void> logPurchase(
-      {@required double amount,
-      @required String currency,
-      Map<String, dynamic> parameters}) {
+  Future<void> logPurchase({
+    @required double amount,
+    @required String currency,
+    Map<String, dynamic> parameters,
+  }) {
     final args = <String, dynamic>{
       'amount': amount,
       'currency': currency,
       'parameters': parameters,
     };
     return _channel.invokeMethod<void>('logPurchase', _filterOutNulls(args));
+  }
+
+  /// Log this event when the user has unlocked an achievement
+  ///
+  /// See: https://developers.facebook.com/docs/reference/androidsdk/current/facebook/com/facebook/appevents/appeventsconstants.html/#eventnameunlockedachievement
+  Future<void> logUnlockAchievement({@required String description}) {
+    return logEvent(
+      name: eventUnlockAchievement,
+      parameters: {
+        paramNameDescription: description,
+      },
+    );
+  }
+
+  /// Log this event when the user has achieved a particular level
+  ///
+  /// See: https://developers.facebook.com/docs/reference/androidsdk/current/facebook/com/facebook/appevents/appeventsconstants.html/#eventnameachievedlevel
+  Future<void> logAchieveLevel({@required String level}) {
+    return logEvent(
+      name: eventLevelAchieved,
+      parameters: {
+        paramNameLevel: level,
+      },
+    );
+  }
+
+  /// Log this event when the user adds something to the wishlist
+  ///
+  /// See: https://developers.facebook.com/docs/reference/androidsdk/current/facebook/com/facebook/appevents/appeventsconstants.html/#eventnameaddedtowishlist
+  Future<void> logAddToWishlist({
+    @required String type,
+    @required String id,
+    @required String currency,
+  }) {
+    return logEvent(
+      name: eventAddToWishlist,
+      parameters: {
+        paramNameContentType: type,
+        paramNameContentId: id,
+        paramNameCurrency: currency,
+      },
+    );
   }
 }
